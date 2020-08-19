@@ -38,44 +38,67 @@ getDataOfFailedFirstAttempt()
       
 	if [[ "$FIRSTLINE" == *"$SubString"* ]]
 	then 
-	  echo "Calculating Data"
 	  failedData="$FIRSTLINE"
 	  arr=($failedData)
 	  userName="${arr[8]}"
 	  ipAddress="${arr[10]}"
+	  Time2=${arr[2]}
 	fi
 }
 
 getDataFromFile()
 {
-    while IFS=: read a1 a2 a3 a4
+    while IFS=" " read a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14
     do 
-    	if [[ "$a4" == *"$SubString"* ]]
-	  	then
-	     failedDataOfFile="$a4"
-	     splitData
+	Time1=$a3
+    	if [ "$a6" == "Failed" ]&&[ "$a7" == "password" ]
+	 then
+	     username=$a9
+             ipaddress=$a11
+	     calculateTime
+	     calculateData
 	  fi
-    	done <"$file"
+    done <"$file"
 }
 
-splitData()
+calculateTime()
 {
+    IFS=':' read -r -a t1 <<< "$Time1"
+    IFS=':' read -r -a t2 <<< "$Time2"
+    t1=("${t1[@]##0}")
+    t2=("${t2[@]##0}")
+    if (( t1[0] > t2[0] || ( t1[0] == t2[0] && t1[1] > t2[1]) ))
+    then
+  	if (( t1[1] < t2[1] ))
+  	then
+   	  (( t1[1] += 60 ))
+   	  (( t1[0] -- ))
+  	fi
+    timeDifferenceHours=$(( t1[0]-t2[0] ))
+    timeDifferenceMinute=$(( t1[1] - t2[1] ))
+    echo $timeDifferenceHours
+    echo $timeDifferenceMinute
+    fi
+
+
+}
+
+calculateData()
+{
+	echo "$timeDifference"
 	setDelimiter=' '
-	read -a arr2 <<< "$failedDataOfFile"
-	if [[ "${arr2[3]}" == *"$userName"* ]]&&[[ "${arr2[5]}" == *"$ipAddress"* ]]
-	then
+	if [[ "$username" == *"$userName"* ]]&&[[ "$ipaddress" == *"$ipAddress"* ]]&&[[ "$timeDifferenceHours" -le "00" ]]&&[[ "$timeDifferenceMinute" -le "30" ]]
+ 	then
 	   a=`expr $a + 1`
-	   echo $a
-	elif [[ "${arr2[3]}" != *"$userName"* ]]||[[ "${arr2[5]}" != *"$ipAddress"* ]]
+	elif [[ "$username" != *"$userName"* ]]||[[ "$ipaddress" != *"$ipAddress"* ]]
 	then
-	   echo $a
 	   if [[ $a -ge 3 ]]
 	   then
 	       saveDataInFile
 	   fi
 	   a=1
-	   userName="${arr2[3]}"
-	   ipAddress="${arr2[5]}"
+	   userName="$username"
+	   ipAddress="$ipaddress"
 	fi
 }
 
@@ -83,7 +106,7 @@ saveDataInFile()
 {
 	echo "$userName                                            $ipAddress                                              $a">>output.txt
 }
-# authenticateRoot
+#authenticateRoot
 readTheFile
 getTotalNumberofUnAuthenticatedAttempts
 getDataOfFailedFirstAttempt
