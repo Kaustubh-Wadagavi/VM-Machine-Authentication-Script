@@ -1,63 +1,62 @@
 #! /bin/bash
 
-
-SubString="Failed password"
-file="/home/kaustubh/Desktop/auth.log"
-iCnt=0
-userName=""
-ipAddress=""
 authenticateRoot()
 {
 	cd /var/log/
 	sudo su
-	
 }
-
-readTheFile()
-{ 
-	cd /home/kaustubh/Desktop/
-	countFailedPassword=$(grep "Failed password" auth.log | wc -l)
-	touch output.txt
-        echo "UserName                                            IP Address                                       Failed Login Attempts">>output.txt
+countTotalAttempts()
+{
+	countFailedPassword=$(grep "Failed password" $file | wc -l)
 }
 
 getTotalNumberofUnAuthenticatedAttempts()
 {
 	if [ countFailedPassword > 2 ]
 	then 
-	    echo "Total number of Failed Login attempts are :" $countFailedPassword
+	   echo -e "\nTotal number of Failed Login attempts are :" $countFailedPassword
 	else
-	   echo "There is no failed Login attempts for V-M machine!!"
+	   echo -e "\nThere is no failed Login attempts for V-M machine!!"
 	   exit
 	fi
 }
 
+createTheFile()
+{ 
+	touch output.txt
+	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo "|           UserName                |              IP Address            |               Failed Login Attempts           |">>output.txt
+	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
+}
+
 getDataOfFailedFirstAttempt()
 {
-	FIRSTLINE=`head -1 $file`
-      
-	if [[ "$FIRSTLINE" == *"$SubString"* ]]
-	then 
-	  failedData="$FIRSTLINE"
-	  arr=($failedData)
-	  userName="${arr[8]}"
-	  ipAddress="${arr[10]}"
-	  Time2=${arr[2]}
-	fi
+    while IFS=" " read b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14
+    do 
+    	if [ "$b6" == "Failed" ]&&[ "$b7" == "password" ]
+	 		then
+	    	 Time2=$b3
+	    	 userName=$b9
+      	 ipAddress=$b11
+	    	 break
+	  	fi
+    done <"$file"
 }
 
 getDataFromFile()
 {
     while IFS=" " read a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14
     do 
-	Time1=$a3
     	if [ "$a6" == "Failed" ]&&[ "$a7" == "password" ]
-	 then
-	     username=$a9
-             ipaddress=$a11
-	     calculateTime
-	     calculateData
-	  fi
+	 		then
+	    	 Time1=$a3
+	    	 username=$a9
+         ipaddress=$a11
+	   	   calculateTime
+	       calculateData
+	  	fi
     done <"$file"
 }
 
@@ -76,8 +75,6 @@ calculateTime()
   	fi
     timeDifferenceHours=$(( t1[0]-t2[0] ))
     timeDifferenceMinute=$(( t1[1] - t2[1] ))
-    echo $timeDifferenceHours
-    echo $timeDifferenceMinute
     fi
 
 
@@ -85,12 +82,11 @@ calculateTime()
 
 calculateData()
 {
-	echo "$timeDifference"
 	setDelimiter=' '
 	if [[ "$username" == *"$userName"* ]]&&[[ "$ipaddress" == *"$ipAddress"* ]]&&[[ "$timeDifferenceHours" -le "00" ]]&&[[ "$timeDifferenceMinute" -le "30" ]]
  	then
 	   a=`expr $a + 1`
-	elif [[ "$username" != *"$userName"* ]]||[[ "$ipaddress" != *"$ipAddress"* ]]
+	elif [[ "$username" != *"$userName"* ]]||[[ "$ipaddress" != *"$ipAddress"* ]]||[[ "$timeDifferenceHours" -ge "00" ]]||[[ "$timeDifferenceMinute" -ge "30" ]]
 	then
 	   if [[ $a -ge 3 ]]
 	   then
@@ -99,31 +95,36 @@ calculateData()
 	   a=1
 	   userName="$username"
 	   ipAddress="$ipaddress"
+	   Time2=$Time1
+	else
+	    echo "There is no continuous Failed Login Attempts"
 	fi
 }
 
 saveDataInFile()
 {
-	echo "$userName                                            $ipAddress                                              $a">>output.txt
+	echo "|           $userName                |              $ipAddress            |                       $a                     |">>output.txt
+	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
 }
+
+
+SubString="Failed password"
+file="<ENTER YOUR auth.log FILE PATH HERE>"
+iCnt=0
+userName=""
+ipAddress=""
+
 #authenticateRoot
-readTheFile
+countTotalAttempts
 getTotalNumberofUnAuthenticatedAttempts
+createTheFile
 getDataOfFailedFirstAttempt
 getDataFromFile
-saveDataInFile
-
-
-
-
-
-
-
-
-
-
-
-
+if [ $a -ge 3 ]
+then
+	saveDataInFile
+fi
+echo "Calculated Data stored in the : OutPut.txt"
 
 
 
