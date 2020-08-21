@@ -1,10 +1,5 @@
 #! /bin/bash
 
-authenticateRoot()
-{
-	cd /var/log/
-	sudo su
-}
 countTotalAttempts()
 {
 	countFailedPassword=$(grep "Failed password" $file | wc -l)
@@ -24,11 +19,12 @@ getTotalNumberofUnAuthenticatedAttempts()
 createTheFile()
 { 
 	touch output.txt
-	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
-	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
-	echo "|           UserName                |              IP Address            |               Failed Login Attempts           |">>output.txt
-	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
-	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo "*******************************************************************************">>output.txt
+	echo "-------------------------------------------------------------------------------">>output.txt
+	echo " Number of Failed |      IP Address       |               User Name            ">>output.txt
+	echo "  Login Attempts  |                       |                                    ">>output.txt 
+	echo "-------------------------------------------------------------------------------">>output.txt
+	echo "*******************************************************************************">>output.txt
 }
 
 getDataOfFailedFirstAttempt()
@@ -103,28 +99,30 @@ calculateData()
 
 saveDataInFile()
 {
-	echo "|           $userName                |              $ipAddress            |                       $a                     |">>output.txt
-	echo "--------------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo "         $a        |     $ipAddress     |            $userName                 ">>output.txt
+	echo "-------------------------------------------------------------------------------">>output.txt
 }
 
 
 SubString="Failed password"
-file="<ENTER YOUR auth.log FILE PATH HERE>"
+file=/var/log/authTwo.log
 iCnt=0
 userName=""
 ipAddress=""
 
-#authenticateRoot
 countTotalAttempts
 getTotalNumberofUnAuthenticatedAttempts
 createTheFile
 getDataOfFailedFirstAttempt
 getDataFromFile
-if [ $a -ge 3 ]
+if [[ $a -ge 3 ]]
 then
 	saveDataInFile
+	echo "Calculated Data stored in the : output.txt"
 fi
-echo "Calculated Data stored in the : OutPut.txt"
+exit
+
+
 
 
 
