@@ -21,7 +21,7 @@ createTheFile()
 	touch output.txt
 	echo "*******************************************************************************">>output.txt
 	echo "-------------------------------------------------------------------------------">>output.txt
-	echo " Number of Failed |      IP Address       |               User Name            ">>output.txt
+	echo " Number of Failed |      IP Address       |           User Name                ">>output.txt
 	echo "  Login Attempts  |                       |                                    ">>output.txt 
 	echo "-------------------------------------------------------------------------------">>output.txt
 	echo "*******************************************************************************">>output.txt
