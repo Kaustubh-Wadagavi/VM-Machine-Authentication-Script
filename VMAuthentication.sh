@@ -1,12 +1,8 @@
 #! /bin/bash
 
-countTotalAttempts()
+countTotalUnAuthenticatedAttempts()
 {
 	countFailedPassword=$(grep "Failed password" $file | wc -l)
-}
-
-getTotalNumberofUnAuthenticatedAttempts()
-{
 	if [ countFailedPassword > 2 ]
 	then 
 	   echo -e "\nTotal number of Failed Login attempts are :" $countFailedPassword
@@ -19,6 +15,8 @@ getTotalNumberofUnAuthenticatedAttempts()
 createTheFile()
 { 
 	touch output.txt
+	now=$(date)
+	echo "$now" >>output.txt
 	echo "*******************************************************************************">>output.txt
 	echo "-------------------------------------------------------------------------------">>output.txt
 	echo " Number of Failed |      IP Address       |           User Name                ">>output.txt
@@ -27,7 +25,7 @@ createTheFile()
 	echo "*******************************************************************************">>output.txt
 }
 
-getDataOfFailedFirstAttempt()
+getFailedFirstAttemptFromFile()
 {
     while IFS=" " read b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14
     do 
@@ -50,9 +48,9 @@ getDataFromFile()
 	    	 Time1=$a3
 	    	 username=$a9
          ipaddress=$a11
-	   	   calculateTime
-	       calculateData
-	  	fi
+	   		 calculateTime
+				 calculateData
+			fi
     done <"$file"
 }
 
@@ -64,13 +62,13 @@ calculateTime()
     t2=("${t2[@]##0}")
     if (( t1[0] > t2[0] || ( t1[0] == t2[0] && t1[1] > t2[1]) ))
     then
-  	if (( t1[1] < t2[1] ))
-  	then
-   	  (( t1[1] += 60 ))
-   	  (( t1[0] -- ))
-  	fi
-    timeDifferenceHours=$(( t1[0]-t2[0] ))
-    timeDifferenceMinute=$(( t1[1] - t2[1] ))
+  		if (( t1[1] < t2[1] ))
+  		then
+   	  	(( t1[1] += 60 ))
+   	  	(( t1[0] -- ))
+  		fi
+    	timeDifferenceHours=$(( t1[0]-t2[0] ))
+    	timeDifferenceMinute=$(( t1[1] - t2[1] ))
     fi
 
 
@@ -99,27 +97,32 @@ calculateData()
 
 saveDataInFile()
 {
-	echo "         $a        |     $ipAddress     |            $userName                 ">>output.txt
+	echo "         $a        |     $ipAddress     |            $userName      | $Time2 | $Time1">>output.txt
 	echo "-------------------------------------------------------------------------------">>output.txt
 }
 
+sendTheEmail()
+{
+	echo "Please Enter Email Address"
+	read emailAddress
+	sendmail 'VM Authentication:' $emailAddress < output.txt
+	echo "Mail Sent to:" $emailAddress
+}
 
-SubString="Failed password"
 file=/var/log/authTwo.log
-iCnt=0
 userName=""
 ipAddress=""
 
-countTotalAttempts
-getTotalNumberofUnAuthenticatedAttempts
+countTotalUnAuthenticatedAttempts
 createTheFile
-getDataOfFailedFirstAttempt
+getFailedFirstAttemptFromFile
 getDataFromFile
 if [[ $a -ge 3 ]]
 then
 	saveDataInFile
 	echo "Calculated Data stored in the : output.txt"
 fi
+#sendTheEmail
 exit
 
 
