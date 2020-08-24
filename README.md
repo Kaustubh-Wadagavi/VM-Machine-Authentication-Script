@@ -6,7 +6,10 @@
 
 **Prerequisite**
 
-      Please install mailutils before running the scrript.
+      1. Please install mailutils before running the scrript.
+      2. Enter auth.log file path in script.
+      e.g.
+      file=/var/log/auth.log
       
 **How to Run?**
 
