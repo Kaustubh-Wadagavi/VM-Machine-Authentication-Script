@@ -17,12 +17,12 @@ createTheFile()
 	touch output.txt
 	now=$(date)
 	echo "$now" >>output.txt
-	echo "*******************************************************************************">>output.txt
-	echo "-------------------------------------------------------------------------------">>output.txt
-	echo " Number of Failed |      IP Address       |           User Name                ">>output.txt
-	echo "  Login Attempts  |                       |                                    ">>output.txt 
-	echo "-------------------------------------------------------------------------------">>output.txt
-	echo "*******************************************************************************">>output.txt
+	echo "***********************************************************************************************************************">>output.txt
+	echo "-----------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo " Number of Failed |      IP Address       |             Time               |	          User Name                      ">>output.txt
+	echo "  Login Attempts  |                       |                                |                                           ">>output.txt 
+	echo "-----------------------------------------------------------------------------------------------------------------------">>output.txt
+	echo "***********************************************************************************************************************">>output.txt
 }
 
 getFailedFirstAttemptFromFile()
@@ -77,10 +77,11 @@ calculateTime()
 calculateData()
 {
 	setDelimiter=' '
-	if [[ "$username" == *"$userName"* ]]&&[[ "$ipaddress" == *"$ipAddress"* ]]&&[[ "$timeDifferenceHours" -le "00" ]]&&[[ "$timeDifferenceMinute" -le "30" ]]
+	if [[ "$username" == *"$userName"* ]]&&[[ "$timeDifferenceHours" -le "00" ]]&&[[ "$timeDifferenceMinute" -le "10" ]]
  	then
+		 endTime=$Time1
 	   a=`expr $a + 1`
-	elif [[ "$username" != *"$userName"* ]]||[[ "$ipaddress" != *"$ipAddress"* ]]||[[ "$timeDifferenceHours" -ge "00" ]]||[[ "$timeDifferenceMinute" -ge "30" ]]
+	elif [[ "$username" != *"$userName"* ]]||[[ "$timeDifferenceHours" -ge "00" ]]||[[ "$timeDifferenceMinute" -ge "10" ]]
 	then
 	   if [[ $a -ge 3 ]]
 	   then
@@ -97,8 +98,8 @@ calculateData()
 
 saveDataInFile()
 {
-	echo "         $a        |     $ipAddress     |            $userName      | $Time2 | $Time1">>output.txt
-	echo "-------------------------------------------------------------------------------">>output.txt
+	echo "         $a        |     $ipAddress     |     $Time2 to $endTime       |               $userName                       ">>output.txt
+	echo "-----------------------------------------------------------------------------------------------------------------------">>output.txt
 }
 
 sendTheEmail()
@@ -109,7 +110,7 @@ sendTheEmail()
 	echo "Mail Sent to:" $emailAddress
 }
 
-file=/var/log/authTwo.log
+file=/home/kaustubh/Desktop/authTwo.log
 userName=""
 ipAddress=""
 
@@ -117,12 +118,13 @@ countTotalUnAuthenticatedAttempts
 createTheFile
 getFailedFirstAttemptFromFile
 getDataFromFile
+
 if [[ $a -ge 3 ]]
 then
 	saveDataInFile
 	echo "Calculated Data stored in the : output.txt"
 fi
-#sendTheEmail
+sendTheEmail
 exit
 
 
