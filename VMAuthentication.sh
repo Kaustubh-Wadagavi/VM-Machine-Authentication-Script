@@ -30,12 +30,12 @@ getFailedFirstAttemptFromFile()
     while IFS=" " read b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14
     do 
     	if [ "$b6" == "Failed" ]&&[ "$b7" == "password" ]
-	 		then
-	    	 Time2=$b3
-	    	 userName=$b9
-      	 ipAddress=$b11
-	    	 break
-	  	fi
+	then
+	    Time2=$b3
+	    userName=$b9
+      	    ipAddress=$b11
+	    break
+	fi
     done <"$file"
 }
 
@@ -44,13 +44,13 @@ getDataFromFile()
     while IFS=" " read a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14
     do 
     	if [ "$a6" == "Failed" ]&&[ "$a7" == "password" ]
-	 		then
-	    	 Time1=$a3
-	    	 username=$a9
-         ipaddress=$a11
-	   		 calculateTime
-				 calculateData
-			fi
+	then
+	   Time1=$a3
+	   username=$a9
+           ipaddress=$a11
+	   calculateTime
+	   calculateData
+	fi
     done <"$file"
 }
 
@@ -110,7 +110,7 @@ sendTheEmail()
 	echo "Mail Sent to:" $emailAddress
 }
 
-file=/home/kaustubh/Desktop/authTwo.log
+file="<Please Enter Auth.log file path here>"
 userName=""
 ipAddress=""
 
